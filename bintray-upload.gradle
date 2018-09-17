@@ -54,7 +54,7 @@ bintray {
 
     configurations = ['archives']
     pkg {
-        repo = "debugger"
+        repo = "JanTursky"
         name = "debugger"
         websiteUrl = siteUrl
         vcsUrl = gitUrl

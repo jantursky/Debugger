@@ -13,6 +13,7 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -164,7 +165,13 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
         File root = new File("/data/data/" + getContext().getPackageName() + "/databases");
         ArrayList<File> files = new ArrayList<>();
         if (root.isDirectory()) {
-            files.addAll(Arrays.asList(root.listFiles()));
+            File[] list = root.listFiles();
+            for (File file : list) {
+                String extension = file.getAbsolutePath().substring(file.getAbsolutePath().lastIndexOf("."));
+                if (!extension.equals(".db-journal")) {
+                    files.add(file);
+                }
+            }
         }
         return files;
     }
