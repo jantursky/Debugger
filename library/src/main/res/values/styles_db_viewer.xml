@@ -1,0 +1,26 @@
+<resources>
+
+    <style name="DbViewerBottomText">
+        <item name="android:layout_width">@dimen/db_viewer_bottom_height</item>
+        <item name="android:layout_height">@dimen/db_viewer_bottom_height</item>
+        <item name="android:textColor">@color/db_viewer_bottom_icon</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/db_viewer_icon_selector</item>
+        <item name="android:layout_gravity">center</item>
+    </style>
+
+    <style name="DbViewerIcon">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:paddingLeft">12dp</item>
+        <item name="android:paddingRight">12dp</item>
+        <item name="android:layout_height">@dimen/db_viewer_bottom_height</item>
+        <item name="android:textColor">@color/db_viewer_bottom_icon</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:background">@drawable/db_viewer_icon_selector</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_gravity">center</item>
+    </style>
+
+
+</resources>

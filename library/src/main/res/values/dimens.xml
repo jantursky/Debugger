@@ -1,0 +1,14 @@
+<resources>
+
+    <dimen name="db_viewer_bottom_height">54dp</dimen>
+    <dimen name="db_viewer_row_height">54dp</dimen>
+    <dimen name="db_viewer_row_width">100dp</dimen>
+    <dimen name="db_viewer_row_txt_size">12sp</dimen>
+    <dimen name="db_viewer_row_txt_small_size">9sp</dimen>
+    <dimen name="db_viewer_grid_row_spacing">1dp</dimen>
+
+    <dimen name="line_spacing">3dp</dimen>
+    <dimen name="dialog_item_height">48dp</dimen>
+    <dimen name="dialog_list_item_name">15sp</dimen>
+
+</resources>

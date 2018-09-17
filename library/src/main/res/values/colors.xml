@@ -1,0 +1,28 @@
+<resources>
+
+    <color name="db_viewer_bottom_bg">#3886ac</color>
+    <color name="db_viewer_bottom_bg_pressed">#2f708f</color>
+    <color name="db_viewer_row_bg">#FFFFFF</color>
+    <color name="db_viewer_row_bg_pressed">#e6e6e6</color>
+    <color name="db_viewer_bottom_icon">#FFFFFF</color>
+    <color name="db_viewer_grid_bg">#ebebeb</color>
+    <color name="db_viewer_grid_row_bg">#FFFFFF</color>
+    <color name="db_viewer_grid_row_bg_pressed">#e6e6e6</color>
+    <color name="db_viewer_grid_row_selected_bg">#ffd9a7</color>
+    <color name="db_viewer_grid_row_selected_bg_pressed">#ffce8d</color>
+    <color name="db_viewer_grid_header_row_bg">#3886ac</color>
+    <color name="db_viewer_grid_header_row_bg_pressed">#2f708f</color>
+    <color name="db_viewer_grid_row_txt">#212121</color>
+    <color name="db_viewer_grid_row_header_txt">#FFFFFF</color>
+    <color name="db_viewer_grid_row_header_type_txt">#FFA633</color>
+    <color name="db_viewer_grid_row_header_sort_type_txt">#fffc33</color>
+
+    <color name="dialog_bg">#FFFFFF</color>
+    <color name="dialog_item_unpressed">#FFFFFFFF</color>
+    <color name="dialog_item_pressed">#e2e2e2</color>
+    <color name="dialog_title">#212121</color>
+    <color name="dialog_desc">#757575</color>
+    <color name="dialog_info">#AA757575</color>
+    <color name="dialog_cancel">#757575</color>
+
+</resources>

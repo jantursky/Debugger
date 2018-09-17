@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ltRoot"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/db_viewer_row_item_selector"
+    android:minHeight="@dimen/dialog_item_height">
+
+    <TextView
+        android:id="@+id/name_textview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:gravity="left|start|center_vertical"
+        android:lineSpacingExtra="@dimen/line_spacing"
+        android:paddingEnd="8dp"
+        android:paddingLeft="24dp"
+        android:paddingRight="8dp"
+        android:paddingStart="24dp"
+        android:text="RJ 35\ndsa"
+        android:textColor="@color/dialog_title"
+        android:textSize="@dimen/dialog_list_item_name" />
+
+</RelativeLayout>
