@@ -44,10 +44,56 @@
             android:layout_alignParentBottom="true"
             android:background="@color/db_viewer_bottom_bg">
 
-            <TextView
-                android:id="@+id/page_textview"
-                style="@style/DbViewerBottomText"
-                android:text="1/1" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="@dimen/db_viewer_bottom_height"
+                    android:layout_height="@dimen/db_viewer_bottom_height"
+                    android:layout_gravity="center"
+                    android:background="@drawable/db_viewer_icon_selector"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/row_count_textview"
+                        style="@style/DbViewerBottomText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:alpha="0.6"
+                        android:text="100 rows"
+                        android:textSize="10sp" />
+
+                    <TextView
+                        android:id="@+id/page_textview"
+                        style="@style/DbViewerBottomText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1/1" />
+
+                </LinearLayout>
+
+                <View style="@style/DbViewerDelimiter" />
+
+                <TextView
+                    android:id="@+id/schema_textview"
+                    style="@style/DbViewerIcon"
+                    android:visibility="visible"
+                    tools:visibility="visible"
+                    android:text="SCHEMA" />
+
+                <View style="@style/DbViewerDelimiter" />
+
+                <TextView
+                    android:id="@+id/query_textview"
+                    style="@style/DbViewerIcon"
+                    android:visibility="gone"
+                    tools:visibility="visible"
+                    android:text="QUERY" />
+
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -56,14 +102,30 @@
                 android:orientation="horizontal">
 
                 <TextView
+                    android:id="@+id/page_first_textview"
+                    style="@style/DbViewerIcon"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:text="&lt;&lt;" />
+
+                <TextView
                     android:id="@+id/page_left_textview"
                     style="@style/DbViewerIcon"
                     android:text="PREVIOUS" />
+
+                <View style="@style/DbViewerDelimiter" />
 
                 <TextView
                     android:id="@+id/page_right_textview"
                     style="@style/DbViewerIcon"
                     android:text="NEXT" />
+
+                <TextView
+                    android:id="@+id/page_last_textview"
+                    style="@style/DbViewerIcon"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:text="&gt;&gt;" />
 
             </LinearLayout>
 
@@ -86,11 +148,12 @@
                     style="@style/DbViewerIcon"
                     android:text="DELETE" />
 
+                <View style="@style/DbViewerDelimiter" />
+
                 <TextView
                     android:id="@+id/close_textview"
                     style="@style/DbViewerIcon"
                     android:text="CLOSE" />
-
 
             </LinearLayout>
 

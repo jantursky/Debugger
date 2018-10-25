@@ -8,11 +8,16 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.jantursky.debugger.dbviewer.annotations.DbViewerRowType;
 import com.jantursky.debugger.dbviewer.db.CursorWrapper;
+import com.jantursky.debugger.dbviewer.models.DbViewerColumnModel;
 import com.jantursky.debugger.dbviewer.models.DbViewerDataModel;
+import com.jantursky.debugger.dbviewer.models.DbViewerRowModel;
+import com.jantursky.debugger.utils.StringUtils;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -107,92 +112,112 @@ public class DBViewerHelper {
         return names;
     }
 
+    public String[] getCustomColumns(String query) {
+        Cursor cursor = db.rawQuery(query, null);
+
+        String[] names = null;
+        if (cursor != null) {
+            names = cursor.getColumnNames();
+            cursor.close();
+        }
+        return names;
+    }
+
     public ArrayList<DbViewerDataModel> getColumnsType(String table) {
         Cursor cursor = db.rawQuery("PRAGMA table_info(" + table + ")", null);
 
         ArrayList<DbViewerDataModel> headerRow = new ArrayList<>();
         if (cursor != null) {
+            int columnPos = 0;
+            headerRow.add(new DbViewerColumnModel(columnPos++, DbViewerRowType.HEADER_EMPTY));
             while (cursor.moveToNext()) {
                 String name = cursor.getString(cursor.getColumnIndex("name"));
                 String type = cursor.getString(cursor.getColumnIndex("type"));
-                headerRow.add(new DbViewerDataModel(name, name, type, true));
+                boolean isNotNull = cursor.getInt(cursor.getColumnIndex("notnull")) == 1;
+                boolean isPrimaryKey = cursor.getInt(cursor.getColumnIndex("pk")) == 1;
+                String defaultValue = cursor.getString(cursor.getColumnIndex("dflt_value"));
+                headerRow.add(new DbViewerColumnModel(columnPos++, name, name, type, isNotNull, isPrimaryKey, defaultValue, DbViewerRowType.HEADER));
             }
             cursor.close();
         }
         return headerRow;
     }
 
-    /*public ArrayList<DbViewerDataModel> getColumnsRow(String table) {
-        Cursor cursor = db.query(table, null, null, null, null, null, null);
+    public ArrayList<ArrayList<DbViewerDataModel>> getDataForTable(String table, String[] columns, String primaryColumnName) {
+        return getData("SELECT * FROM " + table, columns, primaryColumnName);
+    }
 
-        ArrayList<DbViewerDataModel> arrayList = new ArrayList<>();
-        if (cursor != null) {
-            String[] names = cursor.getColumnNames();
-            for (String name : names) {
-                int type = cursor.getType(cursor.getColumnIndex(name));
-                arrayList.add(new DbViewerDataModel(name, type, true));
-            }
-            cursor.close();
-        }
-        return arrayList;
-    }*/
+    public ArrayList<ArrayList<DbViewerDataModel>> getDataForQuery(String query, String[] columns, String primaryColumnName) {
+        return getData(query, columns, primaryColumnName);
+    }
 
-    public ArrayList<ArrayList<DbViewerDataModel>> getData(String table, String[] columns) {
-        Cursor cursor = db.rawQuery("SELECT * FROM " + table, null);
+    public ArrayList<ArrayList<DbViewerDataModel>> getData(String query, String[] columns, String primaryColumnName) {
+        Cursor cursor = db.rawQuery(query, null);
         ArrayList<ArrayList<DbViewerDataModel>> arrayList = new ArrayList<>();
         if (cursor != null) {
             while (cursor.moveToNext()) {
                 ArrayList<DbViewerDataModel> arrayRow = new ArrayList<>();
 
+                int columnPos = 0;
+                arrayRow.add(new DbViewerRowModel(columnPos++, DbViewerRowType.ROW_POSITION));
+                String primaryColumnValue = null;
+                if (!StringUtils.isEmpty(primaryColumnName)) {
+                    for (String column : columns) {
+                        if (column.equals(primaryColumnName)) {
+                            int index = cursor.getColumnIndex(column);
+                            int type = cursor.getType(index);
+                            if (type == Cursor.FIELD_TYPE_NULL) {
+
+                            } else if (type == Cursor.FIELD_TYPE_STRING) {
+                                primaryColumnValue = cursor.getString(index);
+                            } else if (type == Cursor.FIELD_TYPE_FLOAT) {
+                                primaryColumnValue = String.valueOf(cursor.getFloat(index));
+                            } else if (type == Cursor.FIELD_TYPE_INTEGER) {
+                                primaryColumnValue = String.valueOf(cursor.getInt(index));
+                            } else if (type == Cursor.FIELD_TYPE_BLOB) {
+
+                            }
+                        }
+                    }
+                }
+
                 for (String column : columns) {
                     int index = cursor.getColumnIndex(column);
                     int type = cursor.getType(index);
                     if (type == Cursor.FIELD_TYPE_NULL) {
-                        arrayRow.add(new DbViewerDataModel(column, type, "NULL"));
+                        arrayRow.add(new DbViewerRowModel(columnPos++, column, type, DbViewerRowType.ROW, "NULL", primaryColumnName, primaryColumnValue));
                     } else if (type == Cursor.FIELD_TYPE_STRING) {
-                        arrayRow.add(new DbViewerDataModel(column, type, cursor.getString(index)));
+                        arrayRow.add(new DbViewerRowModel(columnPos++, column, type, DbViewerRowType.ROW, cursor.getString(index), primaryColumnName, primaryColumnValue));
                     } else if (type == Cursor.FIELD_TYPE_FLOAT) {
-                        arrayRow.add(new DbViewerDataModel(column, type, cursor.getFloat(index)));
+                        arrayRow.add(new DbViewerRowModel(columnPos++, column, type, DbViewerRowType.ROW, cursor.getFloat(index), primaryColumnName, primaryColumnValue));
                     } else if (type == Cursor.FIELD_TYPE_INTEGER) {
-                        arrayRow.add(new DbViewerDataModel(column, type, cursor.getInt(index)));
+                        arrayRow.add(new DbViewerRowModel(columnPos++, column, type, DbViewerRowType.ROW, cursor.getInt(index), primaryColumnName, primaryColumnValue));
                     } else if (type == Cursor.FIELD_TYPE_BLOB) {
-                        arrayRow.add(new DbViewerDataModel(column, type, "BLOB"));
+                        arrayRow.add(new DbViewerRowModel(columnPos++, column, type, DbViewerRowType.ROW, "BLOB", primaryColumnName, primaryColumnValue));
                     }
                 }
                 arrayList.add(arrayRow);
-
-                //                int position = cursor.getPosition();
-//                int type = cursor.getType(position);
-                /*if (type == Cursor.FIELD_TYPE_NULL) {
-                    arrayRow.add(new DbViewerDataModel(type, "NULL"));
-                } else if (type == Cursor.FIELD_TYPE_STRING) {
-                    arrayRow.add(new DbViewerDataModel(type, cursor.getString(position)));
-                } else if (type == Cursor.FIELD_TYPE_FLOAT) {
-                    arrayRow.add(new DbViewerDataModel(type, cursor.getFloat(position)));
-                } else if (type == Cursor.FIELD_TYPE_INTEGER) {
-                    arrayRow.add(new DbViewerDataModel(type, cursor.getInt(position)));
-                } else if (type == Cursor.FIELD_TYPE_BLOB) {
-                    arrayRow.add(new DbViewerDataModel(type, "BLOB"));
-                }*/
             }
             cursor.close();
         }
         return arrayList;
     }
 
-    public int getCount(String tableName) {
-        return getCount(tableName, null);
+    public int getCountForTable(String tableName) {
+        return getCount("SELECT COUNT(*) AS cnt FROM " + tableName);
     }
 
-    public int getCount(String tableName, String condition) {
+    public int getCountForQuery(String query) {
+        return getCount(query);
+    }
+
+    public int getCount(String query) {
         int count = -1;
-        String query = "SELECT COUNT(*) AS cnt FROM " + tableName +
-                (TextUtils.isEmpty(condition) ? "" : " WHERE " + condition);
         CursorWrapper cursor = this.rawQuery(query, null);
 
         if (cursor != null) {
             if (cursor.moveToNext()) {
-                count = cursor.getInt("cnt");
+                count = cursor.getInt(0);
             }
             cursor.close();
         }
@@ -347,8 +372,8 @@ public class DBViewerHelper {
         int affectedRows = 0;
 
         try {
+            Log.w(TAG, "##### Update table: " + table + ", affected: " + affectedRows + ", values: " + ((values != null) ? values.size() : "IS NULL") + ", query: " + query + ", args " + ((queryArgs != null) ? Arrays.toString(queryArgs) : "IS NULL"));
             affectedRows = this.db.update(table, values, query, queryArgs);
-//			Log.w(TAG, "##### Update table: " + table + ", affected: " + affectedRows + ", values: " + ((values != null) ? values.size() : "IS NULL") + ", query: " + query + ", args " + ((queryArgs != null) ? Arrays.toString(queryArgs) : "IS NULL"));
         } catch (Exception ex) {
             Log.w("Update error " + table, ex);
         }
@@ -391,6 +416,19 @@ public class DBViewerHelper {
     public void endTransactionSuccessful() {
         setTransactionSuccessful();
         endTransaction();
+    }
+
+    public String getSchema(String table) {
+        Cursor cursor = db.rawQuery("SELECT sql FROM sqlite_master WHERE name='" + table + "';", null);
+
+        String schema = null;
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                schema = cursor.getString(0);
+            }
+            cursor.close();
+        }
+        return schema;
     }
 
     private static class DatabaseHelper extends SQLiteOpenHelper {

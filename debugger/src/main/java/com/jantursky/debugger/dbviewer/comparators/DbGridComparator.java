@@ -2,6 +2,7 @@ package com.jantursky.debugger.dbviewer.comparators;
 
 import com.jantursky.debugger.dbviewer.annotations.DbViewerSortType;
 import com.jantursky.debugger.dbviewer.models.DbViewerDataModel;
+import com.jantursky.debugger.dbviewer.models.DbViewerRowModel;
 
 import java.text.Collator;
 import java.util.ArrayList;

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root_layout"
+    android:layout_width="@dimen/db_viewer_row_position_width"
+    android:layout_height="@dimen/db_viewer_row_height"
+    android:background="@color/db_viewer_grid_header_row_bg">
+
+    <View
+        android:id="@+id/delimiter"
+        android:layout_width="1dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="right"
+        android:background="@color/db_viewer_grid_bg" />
+
+</FrameLayout>

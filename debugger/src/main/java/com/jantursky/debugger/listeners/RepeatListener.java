@@ -2,6 +2,7 @@ package com.jantursky.debugger.listeners;
 
 import android.annotation.SuppressLint;
 import android.os.Handler;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -38,11 +39,11 @@ public class RepeatListener implements OnTouchListener {
             if (incrementSpeed) {
                 if (repeatIntervalCurrent > repeatIntervalMin) {
                     repeatIntervalCurrent -= repeatIntervalStep;
-//                Log.w(TAG, "###### " + repeatIntervalCurrent);
+//                    Log.w(TAG, "###### " + repeatIntervalCurrent + " " + repeatIntervalStep);
                 }
             }
 
-            handler.postDelayed(this, repeatIntervalCurrent);
+            handler.postDelayed(handlerRunnable, repeatIntervalCurrent);
         }
     };
 

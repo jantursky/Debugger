@@ -13,7 +13,7 @@ public class JsonUtils {
             new JSONObject(test);
             return true;
         } catch (JSONException ex) {
-            ex.printStackTrace();
+//            ex.printStackTrace();
         }
         return false;
     }
@@ -23,7 +23,7 @@ public class JsonUtils {
             new JSONArray(test);
             return true;
         } catch (JSONException ex) {
-            ex.printStackTrace();
+//            ex.printStackTrace();
         }
         return false;
     }
@@ -33,13 +33,13 @@ public class JsonUtils {
             try {
                 return new JSONObject(text).toString(3);
             } catch (JSONException e) {
-                e.printStackTrace();
+//                e.printStackTrace();
             }
         } else if (isJSONArrayValid(text)) {
             try {
                 return new JSONArray(text).toString(3);
             } catch (JSONException e) {
-                e.printStackTrace();
+//                e.printStackTrace();
             }
         }
         return text;

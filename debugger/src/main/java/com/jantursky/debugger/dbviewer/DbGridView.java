@@ -2,6 +2,7 @@ package com.jantursky.debugger.dbviewer;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Build;
@@ -12,10 +13,14 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SimpleItemAnimator;
+import android.text.InputType;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -28,16 +33,20 @@ import com.jantursky.debugger.dbviewer.annotations.DbViewerSortType;
 import com.jantursky.debugger.dbviewer.comparators.DbGridComparator;
 import com.jantursky.debugger.dbviewer.helpers.DBViewerHelper;
 import com.jantursky.debugger.dbviewer.listeners.DbViewerGridItemListener;
+import com.jantursky.debugger.dbviewer.listeners.DbViewerInputListener;
 import com.jantursky.debugger.dbviewer.listeners.DbViewerListItemListener;
+import com.jantursky.debugger.dbviewer.models.DbViewerColumnModel;
 import com.jantursky.debugger.dbviewer.models.DbViewerDataModel;
 import com.jantursky.debugger.dbviewer.models.DbViewerRecyclerViewModel;
+import com.jantursky.debugger.dbviewer.models.DbViewerRowModel;
 import com.jantursky.debugger.interfaces.GlobalViewListener;
 import com.jantursky.debugger.listeners.RepeatListener;
+import com.jantursky.debugger.utils.FormatUtils;
+import com.jantursky.debugger.utils.StringUtils;
 import com.jantursky.debugger.utils.ViewUtils;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -50,7 +59,8 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
 
     private LinearLayout gridCntLayout;
     private View listLayout, dataLayout;
-    private TextView pageTxt, pageLeftTxt, pageRightTxt, closeTxt, deleteTxt, addTxt;
+    private TextView pageTxt, txtSchema, txtQuery, txtRowCount, pageLeftTxt, pageRightTxt, pageFirstTxt,
+            pageLastTxt, closeTxt, deleteTxt, addTxt;
 
     private DBViewerHelper dbHelper;
     private @DbViewerScreenType
@@ -70,6 +80,7 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
     private String selectedTable;
     private ArrayList<DbViewerDataModel> headerRow;
     private ArrayList<DbViewerRecyclerViewModel> recyclerViews;
+    private RecyclerView.RecycledViewPool recyclerViewPoolItems;
     final RecyclerView.OnScrollListener listener = new RecyclerView.OnScrollListener() {
         @Override
         public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
@@ -117,13 +128,20 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
         recyclerViewList = view.findViewById(R.id.list_recycler_view);
 
         pageTxt = view.findViewById(R.id.page_textview);
+        txtSchema = view.findViewById(R.id.schema_textview);
+        txtQuery = view.findViewById(R.id.query_textview);
+        txtRowCount = view.findViewById(R.id.row_count_textview);
         pageLeftTxt = view.findViewById(R.id.page_left_textview);
         pageRightTxt = view.findViewById(R.id.page_right_textview);
+        pageFirstTxt = view.findViewById(R.id.page_first_textview);
+        pageLastTxt = view.findViewById(R.id.page_last_textview);
         deleteTxt = view.findViewById(R.id.delete_textview);
         closeTxt = view.findViewById(R.id.close_textview);
         addTxt = view.findViewById(R.id.add_textview);
 
         rowHeight = getContext().getResources().getDimension(R.dimen.db_viewer_row_height);
+
+        recyclerViewPoolItems = new RecyclerView.RecycledViewPool();
 
         setTablesList();
 
@@ -131,9 +149,6 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
             @Override
             public void onGlobalLayout(int width, int height) {
                 maxPerPage = (int) Math.floor((float) (height) / rowHeight);
-
-                /*File dbFile = new File("/data/data/" + getContext().getPackageName() + "/databases/" + DatabaseUtil.DATABASE_NAME);
-                onDatabaseClick(dbFile);*/
                 displayDatabases();
             }
         });
@@ -143,10 +158,16 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
 
     private void setTablesList() {
         dbViewerListAdapter = new DbViewerListAdapter();
-        recyclerViewList.addItemDecoration(new DividerItemDecoration(getContext(),
-                DividerItemDecoration.VERTICAL));
+        recyclerViewList.addItemDecoration(getVerticalItemDecoration(getContext()));
         recyclerViewList.setAdapter(dbViewerListAdapter);
+        ((SimpleItemAnimator) recyclerViewList.getItemAnimator()).setSupportsChangeAnimations(false);
         dbViewerListAdapter.setOnItemClickListener(this);
+    }
+
+    public static DividerItemDecoration getVerticalItemDecoration(Context context) {
+        DividerItemDecoration decoration = new DividerItemDecoration(context, RecyclerView.VERTICAL);
+        decoration.setDrawable(ContextCompat.getDrawable(context, R.drawable.list_divider));
+        return decoration;
     }
 
     private void displayDatabases() {
@@ -193,25 +214,28 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
     @SuppressLint("ClickableViewAccessibility")
     private void setListeners() {
         pageTxt.setOnClickListener(this);
-        /*pageLeftTxt.setOnClickListener(this);
-        pageRightTxt.setOnClickListener(this);*/
+        txtQuery.setOnClickListener(this);
+        txtSchema.setOnClickListener(this);
         closeTxt.setOnClickListener(this);
         deleteTxt.setOnClickListener(this);
+        pageFirstTxt.setOnClickListener(this);
+        pageLastTxt.setOnClickListener(this);
 
-        pageLeftTxt.setOnTouchListener(new RepeatListener(400, 100, true, new OnClickListener() {
+        pageLeftTxt.setOnTouchListener(new RepeatListener(400, 30, true, new OnClickListener() {
             @Override
             public void onClick(View view) {
-                jumpToPage(-1);
+                int current = currentPage - 1;
+                jumpToPage(current);
             }
         }));
 
-        pageRightTxt.setOnTouchListener(new RepeatListener(400, 100, true, new OnClickListener() {
+        pageRightTxt.setOnTouchListener(new RepeatListener(400, 30, true, new OnClickListener() {
             @Override
             public void onClick(View view) {
-                jumpToPage(+1);
+                int current = currentPage + 1;
+                jumpToPage(current);
             }
         }));
-//        addTxt.setOnClickListener(this);
     }
 
     private void selectDb(File dbFile) {
@@ -224,14 +248,7 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
         int viewId = view.getId();
         if (viewId == R.id.page_textview) {
             displayJumpToPageDialog();
-        }/* else if (viewId == R.id.page_left_textview) {
-            jumpToPage(-1);
-        } else if (viewId == R.id.page_right_textview) {
-            jumpToPage(+1);
-        }*/ else if (viewId == R.id.delete_textview) {
-            /*if (dbViewerListener != null) {
-                dbViewerListener.deleteDatabase(selectedTable);
-            }*/
+        } else if (viewId == R.id.delete_textview) {
             yesNoDialog("Delete the table?", "Yes", "No", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int which) {
@@ -246,33 +263,127 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
             canGoBack();
         } else if (viewId == R.id.add_textview) {
             addRow();
+        } else if (viewId == R.id.page_first_textview) {
+            jumpToFirst();
+        } else if (viewId == R.id.page_last_textview) {
+            jumpToLast();
+        } else if (viewId == R.id.schema_textview) {
+            yesNoDialog(FormatUtils.formatSchema(dbHelper.getSchema(selectedTable)), "Close", null, null);
+        } else if (viewId == R.id.query_textview) {
+            inputDialog("Create query", "Select * from " + selectedTable, "Execute", "Cancel", new DbViewerInputListener() {
+                @Override
+                public void applyInput(String text) {
+                    if (!isEmpty(text)) {
+                        fillData(null, text);
+                    }
+                }
+
+                @Override
+                public void neutral() {
+
+                }
+            });
         }
     }
 
+    private void jumpToFirst() {
+        int current = 1;
+        jumpToPage(current);
+    }
+
+    private void jumpToLast() {
+        int current = totalPage;
+        jumpToPage(current);
+    }
+
+    private boolean isEmpty(String text) {
+        return StringUtils.isEmpty(text);
+    }
+
+    private void inputDialog(String message, String inputText, String yes, String no, final DbViewerInputListener listener) {
+        inputDialog(message, inputText, yes, no, null, listener);
+    }
+
+    private void inputDialog(String message, String inputText, String yes, String no, String neutral, final DbViewerInputListener listener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(message);
+
+        final EditText input = new EditText(getContext());
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        input.setText(inputText);
+        input.setSingleLine(false);
+        input.setImeOptions(EditorInfo.IME_FLAG_NO_ENTER_ACTION);
+        builder.setView(input);
+
+        input.setSelection(input.getText().length());
+
+        if (!isEmpty(yes)) {
+            builder.setPositiveButton(yes, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if (listener != null) {
+                        listener.applyInput(input.getText().toString());
+                    }
+                }
+            });
+        }
+
+        if (!isEmpty(no)) {
+            builder.setNegativeButton(no, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+        }
+
+        if (!isEmpty(neutral)) {
+            builder.setNeutralButton(neutral, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if (listener != null) {
+                        listener.neutral();
+                    }
+                }
+            });
+        }
+
+        builder.show();
+    }
+
     private void yesNoDialog(String message, String yes, String no, DialogInterface.OnClickListener dialogClickListener) {
+        yesNoDialog(message, yes, no, null, dialogClickListener);
+    }
+
+    private void yesNoDialog(String message, String yes, String no, String neutral, DialogInterface.OnClickListener dialogClickListener) {
+        if (isEmpty(message)) {
+            message = "";
+        }
+
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setMessage(message);
-        if (yes != null) {
+        if (!isEmpty(yes)) {
             builder.setPositiveButton(yes, dialogClickListener);
         }
-        if (no != null) {
+        if (!isEmpty(no)) {
             builder.setNegativeButton(no, dialogClickListener);
+        }
+        if (!isEmpty(neutral)) {
+            builder.setNeutralButton(neutral, dialogClickListener);
         }
         builder.show();
     }
 
     public void deleteTable(String table) {
         dbHelper.delete(table, null);
-        displayData(table);
+        resetDataView();
+        displayData(table, null);
     }
 
-    private void jumpToPage(int jump) {
-        int current = currentPage + jump;
-
+    private void jumpToPage(int current) {
         if (current >= 1 && current <= totalPage) {
             currentPage = current;
             refreshGridList();
-//            scrollToX(-1, scrollBy);
         }
     }
 
@@ -290,17 +401,22 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
         if (currentPage <= 1) {
             pageLeftTxt.setAlpha(ALPHA_DISABLED);
             pageLeftTxt.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.db_viewer_bottom_bg));
+            pageFirstTxt.setVisibility(View.INVISIBLE);
         } else {
             pageLeftTxt.setAlpha(ALPHA_ENABLED);
+            pageLeftTxt.setBackgroundResource(R.drawable.db_viewer_icon_selector);
+            pageFirstTxt.setVisibility(View.VISIBLE);
             pageRightTxt.setBackgroundResource(R.drawable.db_viewer_icon_selector);
         }
 
         if (currentPage >= totalPage) {
             pageRightTxt.setAlpha(ALPHA_DISABLED);
             pageRightTxt.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.db_viewer_bottom_bg));
+            pageLastTxt.setVisibility(View.INVISIBLE);
         } else {
             pageRightTxt.setAlpha(ALPHA_ENABLED);
             pageRightTxt.setBackgroundResource(R.drawable.db_viewer_icon_selector);
+            pageLastTxt.setVisibility(View.VISIBLE);
         }
     }
 
@@ -325,18 +441,22 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
 
     @Override
     public void onTableClick(String table) {
-        displayData(table);
+        resetDataView();
+        displayData(table, null);
     }
 
-    private void displayData(String table) {
-        screenType = DbViewerScreenType.Data;
+    private void resetDataView() {
         scrollBy = 0;
         count = 0;
         currentPage = 1;
         totalPage = 1;
         lastHeaderPos = -1;
+    }
+
+    private void displayData(String table, String query) {
+        screenType = DbViewerScreenType.Data;
         applyView();
-        fillData(table);
+        fillData(table, query);
     }
 
     private void firstListFill() {
@@ -347,19 +467,38 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
         }
     }
 
-    private void fillData(String table) {
-        selectedTable = table;
+    private void fillData(String table, String query) {
+        if (!isEmpty(table)) {
+            selectedTable = table;
+            deleteTxt.setVisibility(View.VISIBLE);
 
-        String[] tableColumns = dbHelper.getAllColumns(table);
+            String[] tableColumns = dbHelper.getAllColumns(table);
 
-        headerRow = dbHelper.getColumnsType(table);
-        count = dbHelper.getCount(table);
-        totalPage = (int) Math.ceil(count / maxPerPage);
-        if ((maxPerPage * totalPage) < count) {
-            totalPage++;
+            headerRow = dbHelper.getColumnsType(table);
+            count = dbHelper.getCountForTable(table);
+            totalPage = (int) Math.ceil(count / (maxPerPage - 1));
+//            Log.w(TAG, "##### Total BEFORE: " + totalPage + " " + count + " " + maxPerPage);
+            if (((maxPerPage - 1) * totalPage) <= count) {
+                totalPage++;
+            }
+//            Log.w(TAG, "##### Total AFTER:  " + totalPage + " " + count + " " + maxPerPage);
+            data = dbHelper.getDataForTable(table, tableColumns, getPrimaryColumn(headerRow));
+        } else {
+            selectedTable = null;
+            deleteTxt.setVisibility(View.GONE);
+
+            String[] tableColumns = dbHelper.getCustomColumns(query);
+
+            headerRow = dbHelper.getColumnsType(query);
+            count = dbHelper.getCountForQuery(query);
+            totalPage = (int) Math.ceil(count / maxPerPage);
+            if ((maxPerPage * totalPage) <= count) {
+                totalPage++;
+            }
+            data = dbHelper.getDataForQuery(query, tableColumns, getPrimaryColumn(headerRow));
         }
-//        Log.w(TAG, "##### Row " + count + " " + maxPerPage + " - " + totalPage);
-        data = dbHelper.getData(table, tableColumns);
+
+        txtRowCount.setText(getResources().getQuantityString(R.plurals.data_row_count, data.size(), data.size()));
 
         if (recyclerViews == null) {
             recyclerViews = new ArrayList<>();
@@ -376,12 +515,22 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
         setRowData();
     }
 
+    private String getPrimaryColumn(ArrayList<DbViewerDataModel> headerRow) {
+        if (headerRow != null && !headerRow.isEmpty()) {
+            for (DbViewerDataModel dbViewerDataModel : headerRow) {
+                if (((DbViewerColumnModel) dbViewerDataModel).isPrimaryKey) {
+                    return ((DbViewerColumnModel) dbViewerDataModel).columnName;
+                }
+            }
+        }
+        return null;
+    }
+
     private void setRowData() {
         if (data != null) {
             List<ArrayList<DbViewerDataModel>> dataPerPage = getDataForPage(currentPage, maxPerPage, data);
 
             updateGridRow(headerRow, getColumns(), true, recyclerViews.get(0), 0);
-//            if (!dataPerPage.isEmpty()) {
             for (int i = 0; i < maxPerPage; i++) {
                 int pos = i + 1;
                 if (!dataPerPage.isEmpty() && i < dataPerPage.size()) {
@@ -391,7 +540,6 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
                     updateGridRow(null, getColumns(), false, recyclerViews.get(pos), pos);
                 }
             }
-//            }
         }
     }
 
@@ -400,7 +548,7 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
     }
 
     private void updateGridRow(ArrayList<DbViewerDataModel> headerRow, int columns, boolean isHeader, DbViewerRecyclerViewModel dbViewerRecyclerViewModel, int pos) {
-        dbViewerRecyclerViewModel.adapter.setData(headerRow, columns, isHeader, pos);
+        dbViewerRecyclerViewModel.adapter.setData(headerRow, columns, isHeader, currentPage, maxPerPage, pos);
     }
 
     private View addRecyclerRow(int columns, boolean isHeader, int tagId) {
@@ -408,16 +556,17 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
         View view = inflater.inflate(R.layout.view_db_grid_recyclerview, this, false);
         RecyclerView recyclerView = view.findViewById(R.id.list_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.HORIZONTAL, false));
-//        recyclerView.addItemDecoration(new ItemDecorationGrid(getResources().getDimensionPixelSize(R.dimen.db_viewer_grid_row_spacing), columns));
-//        recyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.HORIZONTAL));
 
         DbViewerGridRowAdapter adapter = new DbViewerGridRowAdapter(getContext(), isHeader);
         adapter.setOnItemClickListener(this);
 
         recyclerView.setAdapter(adapter);
+        ((SimpleItemAnimator) recyclerView.getItemAnimator()).setSupportsChangeAnimations(false);
         recyclerView.setTag(tagId);
         recyclerView.addOnScrollListener(listener);
         recyclerView.setPadding(0, 0, 0, getContext().getResources().getDimensionPixelSize(R.dimen.db_viewer_grid_row_spacing));
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setRecycledViewPool(recyclerViewPoolItems);
 
         recyclerViews.add(new DbViewerRecyclerViewModel(view, recyclerView, adapter));
         return view;
@@ -427,7 +576,6 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
         for (DbViewerRecyclerViewModel model : recyclerViews) {
             if ((Integer) model.recyclerView.getTag() != tagId) {
                 model.recyclerView.removeOnScrollListener(listener);
-//                Log.w(getClass().getSimpleName(), "###### Scroll " + scrollX);
                 model.recyclerView.scrollBy(scrollX, 0);
                 model.recyclerView.addOnScrollListener(listener);
             }
@@ -450,7 +598,7 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
     }
 
     private void setBottomPages() {
-        pageTxt.setText(currentPage + "/" + totalPage);
+        pageTxt.setText(currentPage + "/" + (totalPage == 0 ? 1 : totalPage));
     }
 
     public boolean canGoBack() {
@@ -467,13 +615,12 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
 
     @Override
     public void onHeaderClick(final DbViewerDataModel model) {
-//        refreshGridList();
         if (data != null && !data.isEmpty()) {
             int pos = -1;
-            ArrayList<DbViewerDataModel> get = data.get(0);
-            for (int i = 0; i < get.size(); i++) {
-                DbViewerDataModel dbModel = get.get(i);
-                if (dbModel.dbKey.equals(model.dbKey)) {
+            ArrayList<DbViewerDataModel> dbViewerRowModels = data.get(0);
+            for (int i = 0; i < dbViewerRowModels.size(); i++) {
+                DbViewerDataModel dbModel = dbViewerRowModels.get(i);
+                if ((dbModel.isHeader() || dbModel.isRow()) && dbModel.dbKey.equals(model.dbKey)) {
                     pos = i;
                     break;
                 }
@@ -494,7 +641,6 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
                 comparator.setRow(pos);
                 comparator.setSortType(sortType);
                 Collections.sort(data, comparator);
-//                Log.w(TAG, "##### Sort " + sortType + " " + lastHeaderPos + " " + pos);
                 if (recyclerViews != null && !recyclerViews.isEmpty()) {
                     DbViewerRecyclerViewModel dbModel = recyclerViews.get(0);
                     if (dbModel.areValidData()) {
@@ -519,12 +665,40 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
     }
 
     @Override
-    public void showDetailCell(DbViewerDataModel model) {
-        yesNoDialog(model.getCleanedText(), "Close", null, new DialogInterface.OnClickListener() {
+    public void showDetailCell(final DbViewerDataModel model) {
+        Log.w(TAG, "##### ShowDetailCell " + model.toString());
+        yesNoDialog(((DbViewerRowModel) model).getCleanedText(), "Close", !isEmpty(selectedTable) ? "Edit" : null, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int which) {
+                if (which == DialogInterface.BUTTON_NEGATIVE) {
+                    inputDialog("Edit cell", ((DbViewerRowModel) model).getCleanedText(), "Save", "Cancel", "Clear", new DbViewerInputListener() {
+                        @Override
+                        public void applyInput(String text) {
+                            saveData(model, text);
+                        }
 
+                        @Override
+                        public void neutral() {
+                            saveData(model, null);
+                        }
+                    });
+                }
             }
         });
+    }
+
+    private void saveData(DbViewerDataModel model, String text) {
+        if (isEmpty(text)) {
+            text = "";
+        }
+        ContentValues cv = new ContentValues();
+        cv.put(model.dbKey, text);
+        dbHelper.update(
+                selectedTable,
+                cv,
+                ((DbViewerRowModel) model).primaryColumnName + "=?",
+                new String[]{String.valueOf(((DbViewerRowModel) model).primaryColumnValue)});
+
+        displayData(selectedTable, null);
     }
 }

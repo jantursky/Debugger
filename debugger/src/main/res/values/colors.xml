@@ -6,6 +6,7 @@
     <color name="db_viewer_row_bg_pressed">#e6e6e6</color>
     <color name="db_viewer_bottom_icon">#FFFFFF</color>
     <color name="db_viewer_grid_bg">#ebebeb</color>
+    <color name="db_viewer_grid_row_position_bg">#e1e1e1</color>
     <color name="db_viewer_grid_row_bg">#FFFFFF</color>
     <color name="db_viewer_grid_row_bg_pressed">#e6e6e6</color>
     <color name="db_viewer_grid_row_selected_bg">#ffd9a7</color>

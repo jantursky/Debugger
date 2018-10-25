@@ -1,0 +1,12 @@
+<resources>
+
+    <plurals name="data_row_count">
+        <item quantity="zero">%1$d rows</item>
+        <item quantity="one">%1$d row</item>
+        <item quantity="two">%1$d rows</item>
+        <item quantity="few">%1$d rows</item>
+        <item quantity="many">%1$d rows</item>
+        <item quantity="other">%1$d rows</item>
+    </plurals>
+
+</resources>
