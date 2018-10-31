@@ -18,6 +18,23 @@
     <color name="db_viewer_grid_row_header_type_txt">#FFA633</color>
     <color name="db_viewer_grid_row_header_sort_type_txt">#fffc33</color>
 
+    <color name="shared_preferences_viewer_bg">#222222</color>
+    <color name="shared_preferences_viewer_txt">#ffffff</color>
+
+    <color name="black_text">#111111</color>
+    <color name="very_light_grey">#eeeeee</color>
+    <color name="light_grey">#cccccc</color>
+    <color name="warmGrey">#bdbdbd</color>
+    <color name="midGrey">#757575</color>
+    <color name="green">#00c853</color>
+    <color name="greenWarm">#18974B</color>
+    <color name="red">#d50000</color>
+    <color name="red_pressed">#ae0000</color>
+    <color name="yellow">#ffa726</color>
+    <color name="yellow_pressed">#d78d20</color>
+    <color name="white">#ffffff</color>
+    <color name="greyLight">#999999</color>
+
     <color name="dialog_bg">#FFFFFF</color>
     <color name="dialog_item_unpressed">#FFFFFFFF</color>
     <color name="dialog_item_pressed">#e2e2e2</color>

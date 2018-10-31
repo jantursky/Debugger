@@ -22,12 +22,17 @@
             app:layoutManager="android.support.v7.widget.LinearLayoutManager"
             tools:listitem="@layout/item_db_viewer_list" />
 
+        <TextView
+            android:id="@+id/cancel_textview"
+            style="@style/CloseIcon" />
+
     </RelativeLayout>
 
     <RelativeLayout
         android:id="@+id/data_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        tools:visibility="invisible">
 
         <LinearLayout
             android:id="@+id/grid_cnt_layout"
@@ -80,18 +85,18 @@
                 <TextView
                     android:id="@+id/schema_textview"
                     style="@style/DbViewerIcon"
+                    android:text="SCHEMA"
                     android:visibility="visible"
-                    tools:visibility="visible"
-                    android:text="SCHEMA" />
+                    tools:visibility="visible" />
 
                 <View style="@style/DbViewerDelimiter" />
 
                 <TextView
                     android:id="@+id/query_textview"
                     style="@style/DbViewerIcon"
+                    android:text="QUERY"
                     android:visibility="gone"
-                    tools:visibility="visible"
-                    android:text="QUERY" />
+                    tools:visibility="visible" />
 
             </LinearLayout>
 

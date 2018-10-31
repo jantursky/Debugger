@@ -1,3 +1,23 @@
 <resources>
+
     <string name="app_name">library</string>
+
+    <string name="component_type_db_viewer">Database Viewer</string>
+    <string name="component_type_shared_preferences_viewer">Shared preferences Viewer</string>
+    <string name="component_type_rest_client">Rest client</string>
+
+    <string name="toast_no_network">Connect to the internet</string>
+
+    <string name="response_code">Response code: %d</string>
+
+    <string name="action_edit">Edit</string>
+    <string name="action_save">Save</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_close">Close</string>
+    <string name="action_run_api_call">Run call</string>
+    <string name="action_stop_api_call">Stop call</string>
+    <string name="action_run_all_api_call">Run all</string>
+    <string name="action_stop_all_api_call">Stop all</string>
+
 </resources>

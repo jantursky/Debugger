@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
+
+    <RelativeLayout
+        android:id="@+id/list_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/list_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent"
+            android:orientation="vertical"
+            android:overScrollMode="never"
+            app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+            tools:listitem="@layout/item_db_viewer_list" />
+
+        <TextView
+            android:id="@+id/cancel_textview"
+            style="@style/CloseIcon" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/data_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:visibility="visible">
+
+        <EditText
+            android:id="@+id/input_edittext"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/bottom_layout"
+            android:background="@color/shared_preferences_viewer_bg"
+            android:gravity="top|left|start"
+            android:inputType="textMultiLine"
+            android:orientation="vertical"
+            android:padding="8dp"
+            android:textColor="@color/shared_preferences_viewer_txt"
+            android:textSize="14sp"
+            tools:text="21321ew321wq  d sasd a" />
+
+        <RelativeLayout
+            android:id="@+id/bottom_layout"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/db_viewer_bottom_height"
+            android:layout_alignParentBottom="true"
+            android:background="@color/db_viewer_bottom_bg">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/edit_textview"
+                    style="@style/DbViewerIcon"
+                    android:text="@string/action_edit"
+                    android:visibility="visible"
+                    tools:visibility="visible" />
+
+                <View style="@style/DbViewerDelimiter" />
+
+                <TextView
+                    android:id="@+id/delete_textview"
+                    style="@style/DbViewerIcon"
+                    android:text="@string/action_delete" />
+
+                <View style="@style/DbViewerDelimiter" />
+
+                <TextView
+                    android:id="@+id/close_textview"
+                    style="@style/DbViewerIcon"
+                    android:text="@string/action_close" />
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+</RelativeLayout>
