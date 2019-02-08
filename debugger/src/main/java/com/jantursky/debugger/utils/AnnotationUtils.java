@@ -16,6 +16,17 @@ public class AnnotationUtils {
         return 0;
     }
 
+    public static int getTextColorFromResponseCode(int code) {
+        if (code >= 100 && code < 200) {
+            return R.color.yellow;
+        } else if (code >= 200 && code < 300) {
+            return R.color.green;
+        } else if (code >= 300) {
+            return R.color.red;
+        }
+        return R.color.red;
+    }
+
 }
 
 // eof

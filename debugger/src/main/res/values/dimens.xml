@@ -13,4 +13,10 @@
     <dimen name="dialog_list_item_name">15sp</dimen>
     <dimen name="dialog_input_padding">16dp</dimen>
 
+    <dimen name="font_larger">20sp</dimen>
+
+    <dimen name="dialog_list_item_name_small">13sp</dimen>
+
+    <dimen name="font_small">12sp</dimen>
+
 </resources>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/ltRoot"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="12dp"
+    android:layout_marginLeft="12dp"
+    android:layout_marginEnd="12dp"
+    android:layout_marginRight="12dp"
+    android:minHeight="@dimen/dialog_item_height"
+    android:orientation="horizontal"
+    android:weightSum="2">
+
+    <EditText
+        android:id="@+id/input_key_edittext"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="8dp"
+        android:layout_weight="1"
+        android:gravity="left|start|center_vertical"
+        android:hint="@string/hint_key"
+        android:inputType="textMultiLine"
+        android:lineSpacingExtra="@dimen/line_spacing"
+        android:maxLines="3"
+        android:textColor="@color/dialog_title"
+        android:textSize="@dimen/dialog_list_item_name"
+        tools:text="RJ 35\ndsa" />
+
+    <EditText
+        android:id="@+id/input_value_edittext"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_weight="1"
+        android:gravity="left|start|center_vertical"
+        android:hint="@string/hint_value"
+        android:inputType="textMultiLine"
+        android:lineSpacingExtra="@dimen/line_spacing"
+        android:maxLines="3"
+        android:textColor="@color/dialog_title"
+        android:textSize="@dimen/dialog_list_item_name"
+        tools:text="RJ 35\ndsa" />
+
+    <TextView
+        android:id="@+id/delete_textview"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_gravity="center"
+        android:layout_weight="1"
+        android:background="@drawable/semi_drawable"
+        android:gravity="center"
+        android:lineSpacingExtra="@dimen/line_spacing"
+        android:text="X"
+        android:textColor="@color/dialog_title"
+        android:textSize="@dimen/font_larger"
+        android:textStyle="bold" />
+
+</LinearLayout>

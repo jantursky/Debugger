@@ -11,6 +11,7 @@ import com.jantursky.debugger.components.restclient.models.ApiCallGetModel;
 import com.jantursky.debugger.components.restclient.models.ApiCallModel;
 import com.jantursky.debugger.components.restclient.models.ApiCallPostModel;
 import com.jantursky.debugger.components.restclient.models.ApiCallPutModel;
+import com.jantursky.debugger.components.restclient.models.ApiGeneralModel;
 import com.jantursky.debugger.components.sharedpreferencesviewer.SharedPreferencesViewerComponent;
 
 import org.json.JSONObject;
@@ -28,28 +29,31 @@ public class MainActivity extends Activity {
                 .builder()
                 .add(new DbViewerComponent())
                 .add(new SharedPreferencesViewerComponent())
-                .add(new RestClientComponent(generateApiCalls()))
+                .add(new RestClientComponent(generateGeneralApiCall(), generateApiCalls()))
                 .build(this, R.id.root_layout);
+    }
+
+    private ApiGeneralModel generateGeneralApiCall() {
+        ApiGeneralModel apiGeneralModel = new ApiGeneralModel();
+        apiGeneralModel.addHeader("Accept", "application/json");
+        apiGeneralModel.addHeader("Content-Type", "application/json");
+        return apiGeneralModel;
     }
 
     private ArrayList<ApiCallModel> generateApiCalls() {
         ArrayList<ApiCallModel> apiCall = new ArrayList<>();
         apiCall.add(new ApiCallGetModel
                 .Builder("https://jsonplaceholder.typicode.com/posts")
-                .addHeader("Content-type", "application/json; charset=UTF-8")
                 .build());
         apiCall.add(new ApiCallPostModel
                 .Builder("https://jsonplaceholder.typicode.com/posts")
-                .addHeader("Content-type", "application/json; charset=UTF-8")
                 .build());
         apiCall.add(new ApiCallPutModel
                 .Builder("https://jsonplaceholder.typicode.com/posts/1")
                 .addBody(generateBody())
-                .addHeader("Content-type", "application/json; charset=UTF-8")
                 .build());
         apiCall.add(new ApiCallDeleteModel
                 .Builder("https://jsonplaceholder.typicode.com/posts/1")
-                .addHeader("Content-type", "application/json; charset=UTF-8")
                 .build());
         return apiCall;
     }

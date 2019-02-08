@@ -43,4 +43,15 @@
     <color name="dialog_info">#AA757575</color>
     <color name="dialog_cancel">#757575</color>
 
+    <color name="rest_delete">#F93E3E</color>
+    <color name="rest_get">#61AFFE</color>
+    <color name="rest_post">#49CC90</color>
+    <color name="rest_put">#FCA130</color>
+
+    <color name="semi_pressed">#e2e2e2</color>
+    <color name="semi_unpressed">#FFFFFFFF</color>
+
+    <color name="dialog_detail_pressed">#e2e2e2</color>
+    <color name="dialog_detail_unpressed">#f1f1f1</color>
+
 </resources>

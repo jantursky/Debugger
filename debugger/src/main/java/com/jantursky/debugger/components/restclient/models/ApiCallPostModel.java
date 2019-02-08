@@ -4,11 +4,11 @@ import com.jantursky.debugger.components.restclient.annotations.ApiCallType;
 
 import org.json.JSONObject;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public class ApiCallPostModel extends ApiCallModel {
 
-    public ApiCallPostModel(String url, String body, HashMap<String, String> headers,
+    public ApiCallPostModel(String url, String body, LinkedHashMap<String, String> headers,
                             int connectionTimeout, int readTimeout) {
         this.type = ApiCallType.POST;
         this.url = url;
@@ -22,7 +22,7 @@ public class ApiCallPostModel extends ApiCallModel {
 
         private String url;
         private String body;
-        public HashMap<String, String> headers;
+        public LinkedHashMap<String, String> headers;
 
         public int connectionTimeout = 10000;
         public int readTimeout = 10000;
@@ -33,7 +33,7 @@ public class ApiCallPostModel extends ApiCallModel {
 
         public Builder addHeader(String key, String value) {
             if (headers == null) {
-                headers = new HashMap<>();
+                headers = new LinkedHashMap<>();
             }
             this.headers.put(key, value);
             return this;

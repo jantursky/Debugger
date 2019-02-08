@@ -1,6 +1,8 @@
 package com.jantursky.debugger.components.restclient;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -14,7 +16,10 @@ import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,17 +28,22 @@ import com.jantursky.debugger.components.restclient.adapters.RestClientListAdapt
 import com.jantursky.debugger.components.restclient.interfaces.RestClientListItemListener;
 import com.jantursky.debugger.components.restclient.interfaces.RestClientResultListener;
 import com.jantursky.debugger.components.restclient.models.ApiCallModel;
+import com.jantursky.debugger.components.restclient.models.ApiGeneralModel;
 import com.jantursky.debugger.components.restclient.tasks.ApiCallTask;
 import com.jantursky.debugger.interfaces.ComponentListener;
+import com.jantursky.debugger.utils.JsonUtils;
 import com.jantursky.debugger.utils.RecyclerViewUtils;
+import com.jantursky.debugger.utils.StringUtils;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class RestClientView extends FrameLayout implements View.OnClickListener, RestClientListItemListener, RestClientResultListener {
 
     private static final String TAG = RestClientView.class.getSimpleName();
 
-    private TextView txtRunAll, txtStopAll, txtClose;
+    private TextView txtRunAll, txtClose, txtGlobalHeaders;
 
     private RestClientListAdapter restClientListAdapter;
 
@@ -41,7 +51,8 @@ public class RestClientView extends FrameLayout implements View.OnClickListener,
 
     private ComponentListener componentListener;
 
-    private SparseArray<AsyncTask> tasks = new SparseArray<>();
+    private ApiGeneralModel apiCallGeneralModel;
+    private SparseArray<ApiCallTask> tasks = new SparseArray<>();
 
     public RestClientView(@NonNull Context context) {
         super(context);
@@ -72,7 +83,7 @@ public class RestClientView extends FrameLayout implements View.OnClickListener,
 
         txtClose = view.findViewById(R.id.close_textview);
         txtRunAll = view.findViewById(R.id.run_all_textview);
-        txtStopAll = view.findViewById(R.id.stop_all_textview);
+        txtGlobalHeaders = view.findViewById(R.id.global_headers_textview);
 
         setList();
         setListeners();
@@ -92,7 +103,7 @@ public class RestClientView extends FrameLayout implements View.OnClickListener,
 
     private void setListeners() {
         txtRunAll.setOnClickListener(this);
-        txtStopAll.setOnClickListener(this);
+        txtGlobalHeaders.setOnClickListener(this);
         txtClose.setOnClickListener(this);
     }
 
@@ -105,13 +116,80 @@ public class RestClientView extends FrameLayout implements View.OnClickListener,
                 componentListener.closeComponent();
             }
         } else if (viewId == R.id.run_all_textview) {
-            if (isNetworkAvailable(getContext())) {
-                runAllCalls();
+            if (hasRunningTask()) {
+                stopAllCalls();
             } else {
-                Toast.makeText(getContext(), R.string.toast_no_network, Toast.LENGTH_SHORT).show();
+                if (isNetworkAvailable(getContext())) {
+                    runAllCalls();
+                } else {
+                    Toast.makeText(getContext(), R.string.toast_no_network, Toast.LENGTH_SHORT).show();
+                }
             }
-        } else if (viewId == R.id.stop_all_textview) {
-            stopAllCalls();
+            updateStatus();
+        } else if (viewId == R.id.global_headers_textview) {
+            editGlobalHeaders();
+        }
+    }
+
+    private void editGlobalHeaders() {
+        LayoutInflater li = LayoutInflater.from(getContext());
+        View promptsView = li.inflate(R.layout.dialog_rest_headers, null);
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
+        alertDialogBuilder.setView(promptsView);
+
+        final LinearLayout ltContent = promptsView.findViewById(R.id.content_layout);
+        TextView txtAdd = promptsView.findViewById(R.id.add_textview);
+        TextView txtCancel = promptsView.findViewById(R.id.cancel_textview);
+        TextView txtSave = promptsView.findViewById(R.id.save_textview);
+
+        if (apiCallGeneralModel.hasHeaders()) {
+            for (Map.Entry<String, String> entry : apiCallGeneralModel.headers.entrySet()) {
+                addHeaderRow(ltContent, entry.getKey(), entry.getValue());
+            }
+        }
+
+        alertDialogBuilder.setCancelable(false);
+
+        final AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+
+        txtCancel.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                alertDialog.dismiss();
+            }
+        });
+
+        txtSave.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                LinkedHashMap<String, String> headers = new LinkedHashMap<>();
+                for (int i = 0; i < ltContent.getChildCount(); i++) {
+                    EditText editTextKey = ltContent.getChildAt(i).findViewById(R.id.input_key_edittext);
+                    EditText editTextValue = ltContent.getChildAt(i).findViewById(R.id.input_value_edittext);
+                    String key = editTextKey.getText().toString();
+                    String value = editTextValue.getText().toString();
+                    headers.put(key, value);
+                }
+                apiCallGeneralModel.setHeaders(headers);
+                restClientListAdapter.updateApiGeneralMode(apiCallGeneralModel);
+                alertDialog.dismiss();
+            }
+        });
+
+        txtAdd.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addHeaderRow(ltContent, "", "");
+            }
+        });
+    }
+
+    private void updateStatus() {
+        if (hasRunningTask()) {
+            txtRunAll.setText(R.string.action_stop_all_api_call);
+        } else {
+            txtRunAll.setText(R.string.action_run_all_api_call);
         }
     }
 
@@ -141,10 +219,14 @@ public class RestClientView extends FrameLayout implements View.OnClickListener,
                 cancel(model);
             }
             restClientListAdapter.runApiCall(model);
-            tasks.put(model.getId(), new ApiCallTask(model, this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR));
+
+            ApiCallTask task = new ApiCallTask(apiCallGeneralModel, model, this);
+            tasks.put(model.getId(), task);
+            task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         } else {
             Toast.makeText(getContext(), R.string.toast_no_network, Toast.LENGTH_SHORT).show();
         }
+        updateStatus();
     }
 
     private void cancel(ApiCallModel model) {
@@ -169,8 +251,66 @@ public class RestClientView extends FrameLayout implements View.OnClickListener,
         cancel(model);
     }
 
-    public void setApiCalls(ArrayList<ApiCallModel> apiCalls) {
-        this.restClientListAdapter.setData(apiCalls);
+    @Override
+    public void editHeaders(ApiCallModel model) {
+
+    }
+
+    private void addHeaderRow(LinearLayout layout, String key, String value) {
+        LayoutInflater li = LayoutInflater.from(getContext());
+        View view = li.inflate(R.layout.item_rest_header_row, null);
+        EditText inputKeyEdittext = view.findViewById(R.id.input_key_edittext);
+        EditText inputValueEdittext = view.findViewById(R.id.input_value_edittext);
+        TextView txtDelete = view.findViewById(R.id.delete_textview);
+
+        if (!StringUtils.isEmpty(key)) {
+            inputKeyEdittext.setText(key);
+        }
+        if (!StringUtils.isEmpty(value)) {
+            inputValueEdittext.setText(value);
+        }
+
+        txtDelete.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ((LinearLayout) view.getParent().getParent()).removeView((View) view.getParent());
+            }
+        });
+
+        layout.addView(view);
+    }
+
+    @Override
+    public void displayOutputDetail(ApiCallModel model) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(model.hasResponseData() ? R.string.rest_output : R.string.rest_error_output);
+
+        ScrollView scrollView = new ScrollView(getContext());
+        TextView input = new TextView(getContext());
+        input.setText(JsonUtils.getIndentedText(model.getResponseOrErrorData()));
+        input.setPadding(32, 32, 32, 32);
+        input.setSingleLine(false);
+
+        scrollView.addView(input);
+        builder.setView(scrollView);
+
+        builder.setNegativeButton(R.string.action_cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
+    public void setApiCalls(ApiGeneralModel apiCallGeneralModel, ArrayList<ApiCallModel> apiCalls) {
+        this.apiCallGeneralModel = apiCallGeneralModel;
+        this.restClientListAdapter.setData(apiCallGeneralModel, apiCalls);
+    }
+
+    public boolean hasRunningTask() {
+        return tasks.size() > 0;
     }
 
     public static void closeTask(AsyncTask... tasks) {
@@ -190,11 +330,21 @@ public class RestClientView extends FrameLayout implements View.OnClickListener,
     @Override
     public void onApiCallResult(ApiCallModel model) {
         restClientListAdapter.updateApiCallResult(model);
+        removeTask(model);
+        updateStatus();
     }
 
     @Override
     public void onApiCallCancel(ApiCallModel model) {
         restClientListAdapter.updateApiCallResult(model);
+        removeTask(model);
+        updateStatus();
+    }
+
+    private void removeTask(ApiCallModel model) {
+        if (tasks.get(model.getId()) != null) {
+            tasks.remove(model.getId());
+        }
     }
 
     public static boolean isNetworkAvailable(Context context) {

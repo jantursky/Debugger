@@ -8,7 +8,7 @@
 
     <string name="toast_no_network">Connect to the internet</string>
 
-    <string name="response_code">Response code: %d</string>
+    <string name="response_code">%1$d %2$s</string>
 
     <string name="action_edit">Edit</string>
     <string name="action_save">Save</string>
@@ -19,5 +19,29 @@
     <string name="action_stop_api_call">Stop call</string>
     <string name="action_run_all_api_call">Run all</string>
     <string name="action_stop_all_api_call">Stop all</string>
+
+    <string name="rest_type_get">GET</string>
+    <string name="rest_type_post">POST</string>
+    <string name="rest_type_put">PUT</string>
+    <string name="rest_type_delete">DELETE</string>
+
+    <string name="hint_key">Key</string>
+    <string name="hint_value">Value</string>
+
+    <string name="rest_display_headers">DISPLAY HEADERS</string>
+    <string name="rest_display_output">DISPLAY OUTPUT</string>
+    <string name="rest_error_output">Error output</string>
+    <string name="rest_finish">✓</string>
+    <string name="rest_hide_headers">HIDE HEADERS</string>
+    <string name="rest_output">Output</string>
+
+    <string name="action_add_header">Add header</string>
+    <string name="action_headers">Global headers</string>
+
+    <string name="response_length">Response length: %1$s</string>
+    <string name="response_time">Response time: %1$s</string>
+
+    <string name="icon_down">▼</string>
+    <string name="icon_up">▲</string>
 
 </resources>

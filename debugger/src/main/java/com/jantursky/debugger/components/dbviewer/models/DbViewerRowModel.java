@@ -107,7 +107,11 @@ public class DbViewerRowModel extends DbViewerDataModel {
     }
 
     public String getCleanedText() {
-        return JsonUtils.getIndentedText(getText());
+        return getCleanedText(false);
+    }
+
+    public String getCleanedText(boolean sortAlphabetically) {
+        return JsonUtils.getIndentedText(getText(), sortAlphabetically);
     }
 
     @Override

@@ -676,25 +676,35 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
 
     @Override
     public void showDetailCell(final DbViewerDataModel model) {
-        Log.w(TAG, "##### ShowDetailCell " + model.toString());
-        yesNoDialog(((DbViewerRowModel) model).getCleanedText(), "Close", !isEmpty(selectedTable) ? "Edit" : null, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int which) {
-                if (which == DialogInterface.BUTTON_NEGATIVE) {
-                    inputDialog("Edit cell", ((DbViewerRowModel) model).getCleanedText(), "Save", "Cancel", "Clear", new DbViewerInputListener() {
-                        @Override
-                        public void applyInput(String text) {
-                            saveData(model, text);
-                        }
+//        Log.w(TAG, "##### ShowDetailCell " + model.toString());
+        showDetailCell(model, ((DbViewerRowModel) model).getCleanedText());
+    }
 
-                        @Override
-                        public void neutral() {
-                            saveData(model, null);
+    public void showDetailCell(final DbViewerDataModel model, String data) {
+        yesNoDialog(data,
+                "Close",
+                !isEmpty(selectedTable) ? "Edit" : null,
+                "Format",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int which) {
+                        if (which == DialogInterface.BUTTON_NEGATIVE) {
+                            inputDialog("Edit cell", ((DbViewerRowModel) model).getCleanedText(), "Save", "Cancel", "Clear", new DbViewerInputListener() {
+                                @Override
+                                public void applyInput(String text) {
+                                    saveData(model, text);
+                                }
+
+                                @Override
+                                public void neutral() {
+                                    saveData(model, null);
+                                }
+                            });
+                        } else if (which == DialogInterface.BUTTON_NEUTRAL) {
+                            showDetailCell(model, ((DbViewerRowModel) model).getCleanedText(true));
                         }
-                    });
-                }
-            }
-        });
+                    }
+                });
     }
 
     private void saveData(DbViewerDataModel model, String text) {

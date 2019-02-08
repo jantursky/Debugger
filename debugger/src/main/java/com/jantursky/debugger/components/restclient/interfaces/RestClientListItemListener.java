@@ -10,4 +10,8 @@ public interface RestClientListItemListener {
 
     void stopCall(ApiCallModel model);
 
+    void editHeaders(ApiCallModel model);
+
+    void displayOutputDetail(ApiCallModel model);
+
 }
