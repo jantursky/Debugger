@@ -55,11 +55,14 @@
                 android:layout_toLeftOf="@+id/center_layout"
                 android:fadingEdge="horizontal"
                 android:fadingEdgeLength="5dp"
+                android:layout_alignParentLeft="true"
                 android:scrollbars="none"
                 android:requiresFadingEdge="horizontal">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
+                    android:layout_gravity="left|start"
+                    android:gravity="left|start"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
@@ -126,6 +129,8 @@
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
+                    android:layout_gravity="right|end"
+                    android:gravity="right|end"
                     android:orientation="horizontal">
 
                     <TextView
