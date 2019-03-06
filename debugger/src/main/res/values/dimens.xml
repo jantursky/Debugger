@@ -1,6 +1,7 @@
 <resources>
 
     <dimen name="db_viewer_bottom_height">54dp</dimen>
+    <dimen name="db_viewer_bottom_width_min">40dp</dimen>
     <dimen name="db_viewer_row_height">54dp</dimen>
     <dimen name="db_viewer_row_width">100dp</dimen>
     <dimen name="db_viewer_row_position_width">30dp</dimen>

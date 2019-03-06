@@ -62,7 +62,7 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
     private LinearLayout gridCntLayout;
     private View listLayout, dataLayout;
     private TextView txtCancel, pageTxt, txtSchema, txtQuery, txtRowCount, pageLeftTxt, pageRightTxt, pageFirstTxt,
-            pageLastTxt, closeTxt, deleteTxt, addTxt;
+            pageLastTxt, closeTxt, deleteTxt, addTxt, txtRefresh;
 
     private DBViewerHelper dbHelper;
     private @DbViewerScreenType
@@ -143,6 +143,7 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
         deleteTxt = view.findViewById(R.id.delete_textview);
         closeTxt = view.findViewById(R.id.close_textview);
         addTxt = view.findViewById(R.id.add_textview);
+        txtRefresh = view.findViewById(R.id.refresh_textview);
 
         rowHeight = getContext().getResources().getDimension(R.dimen.db_viewer_row_height);
 
@@ -223,6 +224,8 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
         txtQuery.setOnClickListener(this);
         txtSchema.setOnClickListener(this);
         closeTxt.setOnClickListener(this);
+        addTxt.setOnClickListener(this);
+        txtRefresh.setOnClickListener(this);
         deleteTxt.setOnClickListener(this);
         pageFirstTxt.setOnClickListener(this);
         pageLastTxt.setOnClickListener(this);
@@ -271,6 +274,8 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
             });
         } else if (viewId == R.id.close_textview) {
             canGoBack();
+        } else if (viewId == R.id.refresh_textview) {
+            refreshGridList();
         } else if (viewId == R.id.add_textview) {
             addRow();
         } else if (viewId == R.id.page_first_textview) {
@@ -390,6 +395,18 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
         displayData(table, null);
     }
 
+    public void deleteRow(String table, DbViewerDataModel model) {
+        if (model instanceof DbViewerRowModel) {
+//            Log.w(TAG, "##### deleteRow " + table + " " + model.toString());
+            dbHelper.delete(table, model.dbKey + " = ?", new String[]{((DbViewerRowModel) model).primaryColumnValue});
+            displayData(table, null);
+        }
+//        dbHelper.delete(table, null);
+//        refreshGridList();
+//        resetDataView();
+//        displayData(table, null);
+    }
+
     private void jumpToPage(int current) {
         if (current >= 1 && current <= totalPage) {
             currentPage = current;
@@ -410,22 +427,22 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
     private void checkPages() {
         if (currentPage <= 1) {
             pageLeftTxt.setAlpha(ALPHA_DISABLED);
-            pageLeftTxt.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.db_viewer_bottom_bg));
+//            pageLeftTxt.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.db_viewer_bottom_bg));
             pageFirstTxt.setVisibility(View.INVISIBLE);
         } else {
             pageLeftTxt.setAlpha(ALPHA_ENABLED);
-            pageLeftTxt.setBackgroundResource(R.drawable.db_viewer_icon_selector);
+//            pageLeftTxt.setBackgroundResource(R.drawable.db_viewer_icon_selector);
             pageFirstTxt.setVisibility(View.VISIBLE);
-            pageRightTxt.setBackgroundResource(R.drawable.db_viewer_icon_selector);
+//            pageRightTxt.setBackgroundResource(R.drawable.db_viewer_icon_selector);
         }
 
         if (currentPage >= totalPage) {
             pageRightTxt.setAlpha(ALPHA_DISABLED);
-            pageRightTxt.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.db_viewer_bottom_bg));
+//            pageRightTxt.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.db_viewer_bottom_bg));
             pageLastTxt.setVisibility(View.INVISIBLE);
         } else {
             pageRightTxt.setAlpha(ALPHA_ENABLED);
-            pageRightTxt.setBackgroundResource(R.drawable.db_viewer_icon_selector);
+//            pageRightTxt.setBackgroundResource(R.drawable.db_viewer_icon_selector);
             pageLastTxt.setVisibility(View.VISIBLE);
         }
     }
@@ -672,6 +689,20 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
                 }
             }
         }
+    }
+
+    @Override
+    public void deleteRow(final DbViewerDataModel model) {
+        yesNoDialog("Delete the row?", "Yes", "No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int which) {
+                if (which == DialogInterface.BUTTON_POSITIVE) {
+                    deleteRow(selectedTable, model);
+                } else if (which == DialogInterface.BUTTON_NEGATIVE) {
+
+                }
+            }
+        });
     }
 
     @Override

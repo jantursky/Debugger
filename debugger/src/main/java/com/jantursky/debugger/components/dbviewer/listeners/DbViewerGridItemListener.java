@@ -8,6 +8,8 @@ public interface DbViewerGridItemListener {
 
     void highlightCell(int row);
 
+    void deleteRow(DbViewerDataModel model);
+
     void showDetailCell(DbViewerDataModel model);
 
 }

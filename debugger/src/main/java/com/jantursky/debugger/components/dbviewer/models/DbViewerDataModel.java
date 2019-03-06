@@ -37,4 +37,14 @@ public class DbViewerDataModel {
     public String geType() {
         return "";
     }
+
+    @Override
+    public String toString() {
+        return "DbViewerDataModel{" +
+                "rowType=" + rowType +
+                ", columnPos=" + columnPos +
+                ", isHidden=" + isHidden +
+                ", dbKey='" + dbKey + '\'' +
+                '}';
+    }
 }

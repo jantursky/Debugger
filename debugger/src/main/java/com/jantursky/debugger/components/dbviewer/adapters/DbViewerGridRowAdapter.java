@@ -258,6 +258,17 @@ public class DbViewerGridRowAdapter extends RecyclerView.Adapter<DbViewerGridRow
                 });
             } else if (model.isRowPosition()) {
                 holder.txtName.setText(String.valueOf(((currentPage - 1) * (maxPerPage - 1)) + rowPos));
+                holder.txtName.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        int pos = holder.getAdapterPosition();
+                        if (pos != -1) {
+                            if (listener != null) {
+                                listener.deleteRow(getItem(1));
+                            }
+                        }
+                    }
+                });
             } else if (model.isEmptyHeader()) {
 
             }
