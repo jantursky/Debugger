@@ -3,7 +3,7 @@
 buildscript {
 
     ext {
-        propVersionName = '0.2.6'
+        propVersionName = '0.2.7'
     }
     
     repositories {

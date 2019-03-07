@@ -275,6 +275,7 @@ public class DbGridView extends FrameLayout implements View.OnClickListener, DbV
         } else if (viewId == R.id.close_textview) {
             canGoBack();
         } else if (viewId == R.id.refresh_textview) {
+            displayData(selectedTable, null);
             refreshGridList();
         } else if (viewId == R.id.add_textview) {
             addRow();
