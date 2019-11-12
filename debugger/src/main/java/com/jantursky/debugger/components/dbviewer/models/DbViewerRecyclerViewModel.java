@@ -1,6 +1,6 @@
 package com.jantursky.debugger.components.dbviewer.models;
 
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 
 import com.jantursky.debugger.components.dbviewer.adapters.DbViewerGridRowAdapter;
